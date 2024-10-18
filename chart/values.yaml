@@ -1,0 +1,357 @@
+forceRedeploy: true
+
+clusterRole:
+  name: homepage
+  rules:
+    - apiGroups:
+        - ""
+      resources:
+        - namespaces
+        - pods
+        - nodes
+      verbs:
+        - get
+        - list
+    - apiGroups:
+        - extensions
+        - networking.k8s.io
+      resources:
+        - ingresses
+      verbs:
+        - get
+        - list
+    - apiGroups:
+        - traefik.containo.us
+        - traefik.io
+      resources:
+        - ingressroutes
+      verbs:
+        - get
+        - list
+    - apiGroups:
+        - metrics.k8s.io
+      resources:
+        - nodes
+        - pods
+      verbs:
+        - get
+        - list
+    - apiGroups:
+        - apiextensions.k8s.io
+      resources:
+        - customresourcedefinitions/status
+      verbs:
+        - get
+
+clusterRoleBinding:
+  name: homepage
+  clusterRoleName: homepage
+  serviceAccountName: homepage
+
+configMaps:
+  - name: homepage
+    data:
+      kubernetes.yaml: |
+        mode: cluster
+      settings.yaml: |
+        title: homepage
+        headerStyle: boxed
+        background: https://raw.githubusercontent.com/gethomepage/homepage/main/docs/assets/blossom_valley.jpg
+        cardBlur: md
+        theme: dark
+        layout:
+          PVE:
+            style: row
+            columns: 1
+          Streaming:
+            style: row
+            columns: 2
+          Media:
+            style: row
+            columns: 4
+          Media utilities:
+            style: row
+            columns: 3
+          Download clients:
+            style: row
+            columns: 2
+      custom.css: ""
+      custom.js: ""
+      bookmarks.yaml: |
+        - Developer:
+            - Github:
+                - abbr: org
+                  href: https://github.com/flmorg
+            - Github:
+                - abbr: flm
+                  href: https://github.com/Flaminel
+      services.yaml: |
+        - PVE:
+            - Proxmox:
+                icon: sh-proxmox
+                description: Heimdal
+                widget:
+                  type: proxmox
+                  url: https://@vault(secrets/data/proxmox ip | PROXMOX_IP):8006
+                  username: @vault(secrets/data/proxmox homepage_user | HOMEPAGE_USER)
+                  password: @vault(secrets/data/proxmox homepage_pass | HOMEPAGE_PASS)
+                  node: heimdal
+
+        - Streaming:
+            - Plex:
+                icon: sh-plex
+                description: Media streaming
+                href: https://plex.@vault(secrets/data/domain main | DOMAIN_NAME)
+                siteMonitor: http://service.plex.svc.cluster.local
+                widget:
+                  type: plex
+                  url: http://service.plex.svc.cluster.local
+                  key: @vault(secrets/data/plex token | PLEX_TOKEN)
+            - Tautulli:
+                icon: sh-tautulli
+                description: Plex monitor
+                href: https://tau.@vault(secrets/data/domain main | DOMAIN_NAME)
+                siteMonitor: http://service.tautulli.svc.cluster.local
+                widget:
+                  type: tautulli
+                  url: http://service.tautulli.svc.cluster.local
+                  key: @vault(secrets/data/tautulli api_key | TAU_KEY)
+                  enableUser: true
+                  showEpisodeNumber: true
+                  expandOneStreamToTwoRows: true
+
+        - Media:
+            - Sonarr:
+                icon: sh-sonarr
+                description: Series management
+                href: https://snrl.@vault(secrets/data/domain main | DOMAIN_NAME)
+                siteMonitor: http://service.sonarr-low-res.svc.cluster.local
+                widget:
+                  type: sonarr
+                  url: http://service.sonarr-low-res.svc.cluster.local
+                  key: @vault(secrets/data/sonarr low_api_key | SNRL_KEY)
+                  enableQueue: true
+            - Sonarr 4K:
+                icon: sh-sonarr
+                description: Series management
+                href: https://snrh.@vault(secrets/data/domain main | DOMAIN_NAME)
+                siteMonitor: http://service.sonarr-high-res.svc.cluster.local
+                widget:
+                  type: sonarr
+                  url: http://service.sonarr-high-res.svc.cluster.local
+                  key: @vault(secrets/data/sonarr high_api_key | SNRH_KEY)
+                  enableQueue: true
+            - Radarr:
+                icon: sh-radarr
+                description: Movie management
+                href: https://rdrl.@vault(secrets/data/domain main | DOMAIN_NAME)
+                siteMonitor: http://service.radarr-low-res.svc.cluster.local
+                widget:
+                  type: radarr
+                  url: http://service.radarr-low-res.svc.cluster.local
+                  key: @vault(secrets/data/radarr low_api_key | RDRL_KEY)
+                  enableQueue: true
+            - Radarr 4K:
+                icon: sh-radarr
+                description: Movie management
+                href: https://rdrh.@vault(secrets/data/domain main | DOMAIN_NAME)
+                siteMonitor: http://service.radarr-high-res.svc.cluster.local
+                widget:
+                  type: radarr
+                  url: http://service.radarr-high-res.svc.cluster.local
+                  key: @vault(secrets/data/radarr high_api_key | RDRH_KEY)
+                  enableQueue: true
+
+        - Media utilities:
+            - Prowlarr:
+                icon: sh-prowlarr
+                href: https://prow.@vault(secrets/data/domain main | DOMAIN_NAME)
+                description: Index management
+                siteMonitor: http://service.prowlarr.svc.cluster.local
+                widget:
+                  type: prowlarr
+                  url: http://service.prowlarr.svc.cluster.local
+                  key: @vault(secrets/data/prowlarr api_key | PROW_KEY)
+            - Bazarr:
+                icon: sh-bazarr
+                description: Subtitle management
+                href: https://bzrl.@vault(secrets/data/domain main | DOMAIN_NAME)
+                siteMonitor: http://service.bazarr-low-res.svc.cluster.local
+                widget:
+                  type: bazarr
+                  url: http://service.bazarr-low-res.svc.cluster.local
+                  key: @vault(secrets/data/bazarr low_api_key | BZRL_KEY)
+            - Bazarr 4K:
+                icon: sh-bazarr
+                description: Subtitle management
+                href: https://bzrh.@vault(secrets/data/domain main | DOMAIN_NAME)
+                siteMonitor: http://service.bazarr-high-res.svc.cluster.local
+                widget:
+                  type: bazarr
+                  url: http://service.bazarr-high-res.svc.cluster.local
+                  key: @vault(secrets/data/bazarr high_api_key | BZRH_KEY)
+
+        - Download clients:
+            - qBittorrent:
+                icon: sh-qbittorrent
+                description: Download client
+                href: https://qbit.@vault(secrets/data/domain main | DOMAIN_NAME)
+                siteMonitor: http://service.qbittorrent.svc.cluster.local
+                widget:
+                  type: qbittorrent
+                  url: http://service.qbittorrent.svc.cluster.local
+                  username: @vault(secrets/data/qbittorrent username | QBIT_USER)
+                  password: @vault(secrets/data/qbittorrent password | QBIT_PASS)
+            - qBittorrent videos:
+                icon: sh-qbittorrent
+                description: Download client
+                href: https://qbit2.@vault(secrets/data/domain main | DOMAIN_NAME)
+                siteMonitor: http://service.qbittorrent-videos.svc.cluster.local
+                widget:
+                  type: qbittorrent
+                  url: http://service.qbittorrent-videos.svc.cluster.local
+                  username: @vault(secrets/data/qbittorrent username | QBIT_USER)
+                  password: @vault(secrets/data/qbittorrent password | QBIT_PASS)
+
+      widgets.yaml: |
+        - kubernetes:
+            cluster:
+              show: true
+              cpu: true
+              memory: true
+              showLabel: true
+              label: "cluster"
+            nodes:
+              show: true
+              cpu: true
+              memory: true
+              showLabel: true
+        - resources:
+            backend: resources
+            expanded: true
+            cpu: true
+            memory: true
+        - search:
+            provider: google
+            target: _blank
+            showSearchSuggestions: true
+      docker.yaml: ""
+
+deployment:
+  serviceAccountName: homepage
+  automountServiceAccountToken: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    maxSurge: 1
+    maxUnavailable: 0
+  containers:
+    - name: homepage
+      image:
+        repository: ghcr.io/gethomepage/homepage
+        tag: latest
+      ports:
+        - name: http
+          containerPort: 3000
+      resources:
+        requests:
+          cpu: 0m
+          memory: 0Mi
+        limits:
+          cpu: 1000m
+          memory: 256Mi
+      volumeMounts:
+        - mountPath: /app/config/custom.js
+          name: homepage-config
+          subPath: custom.js
+        - mountPath: /app/config/custom.css
+          name: homepage-config
+          subPath: custom.css
+        - mountPath: /app/config/bookmarks.yaml
+          name: homepage-config
+          subPath: bookmarks.yaml
+        - mountPath: /app/config/docker.yaml
+          name: homepage-config
+          subPath: docker.yaml
+        - mountPath: /app/config/kubernetes.yaml
+          name: homepage-config
+          subPath: kubernetes.yaml
+        - mountPath: /app/config/services.yaml
+          name: homepage-config
+          subPath: services.yaml
+        - mountPath: /app/config/settings.yaml
+          name: homepage-config
+          subPath: settings.yaml
+        - mountPath: /app/config/widgets.yaml
+          name: homepage-config
+          subPath: widgets.yaml
+        - mountPath: /app/config/logs
+          name: logs
+  volumes:
+    - name: homepage-config
+      type: configMap
+      typeName: homepage
+    - name: logs
+      type: emptyDir
+
+ingresses:
+  - name: ingress
+    annotations:
+      nginx.ingress.kubernetes.io/auth-url: https://home.@vault(secrets/data/domain main | DOMAIN_NAME)/oauth2/auth
+      nginx.ingress.kubernetes.io/auth-signin: https://home.@vault(secrets/data/domain main | DOMAIN_NAME)/oauth2/start?rd=$escaped_request_uri
+    tls:
+      secretName: tls-secret
+    hosts:
+      - host: home.@vault(secrets/data/domain main | DOMAIN_NAME)
+        paths:
+          - path: "/"
+            pathType: Prefix
+            serviceName: service
+            servicePort: http
+  - name: oauth2-ingress
+    tls:
+      secretName: tls-secret
+    hosts:
+      - host: home.@vault(secrets/data/domain main | DOMAIN_NAME)
+        paths:
+          - path: /oauth2
+            pathType: Prefix
+            serviceName: oauth2-service
+            servicePort: 80
+
+secrets:
+  - name: homepage
+    type: kubernetes.io/service-account-token
+    annotations:
+      kubernetes.io/service-account.name: homepage
+
+serviceAccount:
+  name: homepage
+  automountServiceAccountToken: true
+  secretName: secret
+
+services:
+  - name: service
+    type: ClusterIP
+    ports:
+      - name: http
+        protocol: TCP
+        port: 80
+        targetPort: 3000
+  - name: oauth2-service
+    type: ExternalName
+    externalName: service.oauth2-proxy.svc.cluster.local
+    ports:
+      - name: http
+        protocol: TCP
+        port: 80
+
+vaultSecrets:
+  - name: tls-secret
+    type: kubernetes.io/tls
+    path: secrets/certificates
+    templates:
+      tls.crt: "{% .Secrets.tls_crt %}"
+      tls.key: "{% .Secrets.tls_key %}"
